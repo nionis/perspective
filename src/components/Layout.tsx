@@ -1,12 +1,15 @@
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { SUPPORT_URL } from "../content/donations.ts";
 import styles from "./Layout.module.css";
 
-export function SiteHeader() {
+export function SiteHeader({ meta }: { meta?: ReactNode }) {
   return (
-    <header className={`${styles.header} ${styles.dark} no-print`}>
+    <header className={styles.header}>
       <Link to="/" className={styles.brand}>
         Perspective
       </Link>
+      {meta ? <div className={styles.meta}>{meta}</div> : null}
     </header>
   );
 }
@@ -14,7 +17,7 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className={styles.footer}>
-      <p>Nothing you type is saved.</p>
+      <p>Saved in this browser only.</p>
       <div className={styles.footerMeta}>
         <p>
           Created with ♥ by{" "}
@@ -26,6 +29,9 @@ export function SiteFooter() {
             Stavros
           </a>
         </p>
+        <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer">
+          Support
+        </a>
       </div>
     </footer>
   );

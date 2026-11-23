@@ -1,0 +1,13 @@
+.grid {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.spent {
+  fill: var(--cell-spent);
+}
+
+.left {
+  fill: var(--ink);
+}

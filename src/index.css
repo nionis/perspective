@@ -1,28 +1,17 @@
 :root {
-  --ink: #12181f;
-  --ink-muted: #4a5563;
-  --ink-faint: #7a8694;
-  --paper: #f8f6f2;
-  --paper-raised: #ffffff;
-  --line: #e2ddd4;
-  --line-strong: #c9c2b6;
-  --sea: #0b1f2a;
-  --sea-mid: #143447;
-  --sea-light: #1e4a5c;
-  --mist: #d4e4e8;
-  --amber: #c4a35a;
-  --amber-soft: #e8d5a3;
-  --accent: #2a7a7a;
-  --accent-soft: #d6ecec;
-  --danger: #8a4b3a;
-  --danger-soft: #f3e4df;
-  --radius: 10px;
-  --font-display: "Fraunces", Georgia, serif;
-  --font-body: "IBM Plex Sans", system-ui, sans-serif;
-  --shadow-soft: 0 12px 40px rgba(11, 31, 42, 0.12);
-  --max-read: 42rem;
-  --max-page: 72rem;
-  color-scheme: light;
+  color-scheme: dark;
+  --bg: #0a0a0a;
+  --ink: #f2eee6;
+  --ink-muted: #a39e95;
+  --ink-dim: #8f8a82;
+  --line: #242424;
+  --line-strong: #3a3a3a;
+  --cell-spent: #2e2e2e;
+  --font-sans: "Inter Tight", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --max-page: 75rem;
+  --max-read: 36rem;
+  --gutter: clamp(1rem, 4vw, 3rem);
 }
 
 *,
@@ -31,19 +20,16 @@
   box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: var(--font-body);
-  font-size: 1.05rem;
-  line-height: 1.6;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
   color: var(--ink);
-  background: var(--paper);
+  background: var(--bg);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
@@ -70,9 +56,10 @@ button {
 h1,
 h2,
 h3 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  line-height: 1.2;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   margin: 0;
 }
 
@@ -85,46 +72,24 @@ img {
   display: block;
 }
 
+::selection {
+  background: var(--ink);
+  color: var(--bg);
+}
+
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--ink);
   outline-offset: 3px;
 }
 
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes progress-grow {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-
-.fade-up {
-  animation: fade-up 0.45s ease both;
-}
-
-@media print {
-  .no-print {
-    display: none !important;
-  }
-
-  body {
-    background: #fff;
-    font-size: 11pt;
-  }
-
-  .writingPage {
-    background: #fff !important;
-  }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }

@@ -1,13 +1,3 @@
-export type VisitUnit = "week" | "month" | "year";
-
-const VISITS_PER_UNIT: Record<VisitUnit, number> = {
-  week: 52,
-  month: 12,
-  year: 1,
-};
-
-export const LIFE_EXPECTANCY = 85;
-
 export function isLeapYear(year: number): boolean {
   return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
 }
@@ -20,66 +10,70 @@ function utcDayNumber(year: number, monthIndex: number, day: number): number {
   return Math.floor(Date.UTC(year, monthIndex, day) / 86_400_000);
 }
 
-export function daysLeftInYear(today: Date): number {
+export type DayStatus = "spent" | "left" | "today";
+
+export type YearLayout = {
+  year: number;
+  startWeekday: number;
+  columns: number;
+  days: DayStatus[];
+};
+
+export function dayOfYear(today: Date): number {
   const year = today.getFullYear();
-  const dayOfYear =
+  return (
     utcDayNumber(year, today.getMonth(), today.getDate()) -
     utcDayNumber(year, 0, 1) +
-    1;
-  return daysInYear(year) - dayOfYear + 1;
+    1
+  );
 }
 
-export function percentOfYearLeft(today: Date): number {
+export type Weekend = {
+  days: [DayStatus, DayStatus];
+};
+
+export type WeekendLayout = {
+  weekends: Weekend[];
+  left: number;
+  next: number | null;
+  startDay: number;
+};
+
+export function weekendLayout(layout: YearLayout): WeekendLayout {
+  const { startWeekday, days } = layout;
+  const firstSaturday = (6 - startWeekday + 7) % 7;
+  const weekends: Weekend[] = [];
+  for (let index = firstSaturday; index + 1 < days.length; index += 7) {
+    weekends.push({ days: [days[index], days[index + 1]] });
+  }
+  const isLeft = ({ days: pair }: Weekend) =>
+    pair.some((day) => day !== "spent");
+  const left = weekends.filter(isLeft).length;
+  const next = weekends.findIndex(
+    ({ days: pair }) => pair.includes("left") && !pair.includes("today"),
+  );
+  return {
+    weekends,
+    left,
+    next: next === -1 ? null : next,
+    startDay: firstSaturday + 1,
+  };
+}
+
+export function yearLayout(today: Date): YearLayout {
   const year = today.getFullYear();
-  return Math.round((daysLeftInYear(today) / daysInYear(year)) * 100);
-}
-
-export function weekendsLeft(today: Date): number {
-  const year = today.getFullYear();
-  const todayUtc = Date.UTC(year, today.getMonth(), today.getDate());
-  const yearEndUtc = Date.UTC(year, 11, 31);
-  const weekday = new Date(todayUtc).getUTCDay();
-  const daysUntilSaturday = (6 - weekday + 7) % 7;
-  let saturday = todayUtc + daysUntilSaturday * 86_400_000;
-  let count = 0;
-  while (saturday <= yearEndUtc) {
-    count += 1;
-    saturday += 7 * 86_400_000;
+  const total = daysInYear(year);
+  const startWeekday = new Date(year, 0, 1).getDay();
+  const current = dayOfYear(today);
+  const days: DayStatus[] = [];
+  for (let i = 0; i < total; i += 1) {
+    const day = i + 1;
+    days.push(day < current ? "spent" : day === current ? "today" : "left");
   }
-  return count;
-}
-
-export type PersonTime =
-  | { kind: "visits"; visits: number }
-  | { kind: "message"; message: string };
-
-export function longevityMessage(name: string): string {
-  return `${name} is living longer than average, every visit counts!`;
-}
-
-export function personTimeResult(input: {
-  name: string;
-  age: number;
-  count: number;
-  unit: VisitUnit;
-}): PersonTime {
-  if (input.age > LIFE_EXPECTANCY) {
-    return { kind: "message", message: longevityMessage(input.name) };
-  }
-  if (input.age === LIFE_EXPECTANCY) {
-    return { kind: "visits", visits: 0 };
-  }
-  const visits =
-    (LIFE_EXPECTANCY - input.age) *
-    input.count *
-    VISITS_PER_UNIT[input.unit];
-  return { kind: "visits", visits };
-}
-
-export function parseNonNegativeInt(raw: string): number | null {
-  const trimmed = raw.trim();
-  if (!/^\d+$/.test(trimmed)) return null;
-  const value = Number(trimmed);
-  if (!Number.isSafeInteger(value)) return null;
-  return value;
+  return {
+    year,
+    startWeekday,
+    columns: Math.ceil((startWeekday + total) / 7),
+    days,
+  };
 }
