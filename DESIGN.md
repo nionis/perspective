@@ -153,6 +153,7 @@ One mount animation: `.plate` rises 10px and fades over 550ms, only inside `@med
 
 - `public/favicon.svg` is the mark: 32×32 black field, bone block P. Do not add a gradient or a second shape.
 - `design/og.svg` is the source of `public/og.png` (1200×630). It repeats the site language: mono top row, two-line title, spent/bone tick band, mono bottom row.
+- The bottom-right label is the production host in uppercase with no scheme (`PERSPECTIVE-NIONI.VERCEL.APP`). Share cards read the host from `SITE_URL`; this static card does not, so changing the origin edits `design/og.svg` and re-rasterizes `public/og.png` in the same pass.
 - `public/apple-touch-icon.png` is 180×180, rendered from the favicon.
 - Regenerate raster assets from the SVG at an exact viewport, then verify dimensions:
 
@@ -167,7 +168,7 @@ To automate the capture, set the viewport to 1200×630, open the SVG, and call `
 Do not use `qlmanage` alone for the card. It pads the thumbnail to a square, so the 1200×630 output becomes 1200×1200. The browser screenshot at an exact viewport is the reliable path.
 
 - `src/app/layout.tsx` owns the base metadata through the Next Metadata API: title, description, canonical, Open Graph, Twitter, icons, theme color. There is no hand-written `<head>`.
-- Use the production origin `https://perspective.nonicorp.com/` (or `NEXT_PUBLIC_SITE_URL`) in canonical and social URLs through `metadataBase`. `og:url` matches canonical, and `og:image` is absolute.
+- Use the production origin `https://perspective-nioni.vercel.app/` (or `NEXT_PUBLIC_SITE_URL`) in canonical and social URLs through `metadataBase`. `og:url` matches canonical, and `og:image` is absolute.
 - A valid share URL gets its own server-rendered metadata: title, description, canonical, `og:url`, `og:image`, and `twitter:image`, all from `src/share/metadata.ts`. The social preview is a server response, never client JavaScript.
 - `public/og.png` is the default card. Valid shares point at `/api/og` instead, which renders the same chart the plate shows.
 

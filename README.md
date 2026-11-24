@@ -32,4 +32,6 @@ The site is a Next.js App Router app on Vercel.
 npx vercel --prod
 ```
 
-`NEXT_PUBLIC_SITE_URL` is optional; set it in the Vercel project when canonical and social URLs must name a specific origin, then redeploy. Without it the app uses `VERCEL_PROJECT_PRODUCTION_URL`, then `https://perspective.nonicorp.com`.
+`NEXT_PUBLIC_SITE_URL` is optional; set it in the Vercel project when canonical and social URLs must name a specific origin, then redeploy. Without it the app uses `VERCEL_PROJECT_PRODUCTION_URL`, then `https://perspective-nioni.vercel.app`.
+
+Changing the production origin also touches the static social card: edit the host label in `design/og.svg` and regenerate `public/og.png`. Share cards follow `SITE_URL`; the default card does not.

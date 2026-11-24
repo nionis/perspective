@@ -182,9 +182,10 @@ Shared: `UnitGrid` is the only place a count becomes squares; `src/unitGrid.ts` 
 
 - `src/app/layout.tsx` owns the base metadata: title, description, canonical, Open Graph, Twitter, icons, theme color, fonts. Use the Next Metadata API, not a hand-written head.
 - The base social image is `public/og.png` (1200×630) from `design/og.svg`. A valid share URL replaces it with `/api/og?…`.
+- Two places name the production host, not one. `SITE_URL` in `src/site.ts` feeds canonical, `og:url`, the image URLs, and the `/api/og` host label. The bottom-right label in `design/og.svg` is the uppercase host with no scheme (`PERSPECTIVE-NIONI.VERCEL.APP`) baked into `public/og.png`. A domain change updates both and re-rasterizes `public/og.png`; the static card cannot follow an env var.
 - `src/app/page.tsx` exports `generateMetadata` and `dynamic = "force-dynamic"`. It parses the query string, and `src/share/metadata.ts` renders title, description, canonical, `og:url`, `og:image`, and `twitter:image` from the same copy and the same image URL the share control uses. Social previews depend on this server response; client JavaScript is never involved.
 - Days and weekends image URLs carry `d=YYYY-MM-DD` so the card is deterministic for that day. The visible share URL never carries `d`.
-- `SITE_URL` in `src/site.ts` resolves `NEXT_PUBLIC_SITE_URL`, then `VERCEL_PROJECT_PRODUCTION_URL`, then `https://perspective.nonicorp.com`. `metadataBase` comes from it, so canonical and social URLs are absolute.
+- `SITE_URL` in `src/site.ts` resolves `NEXT_PUBLIC_SITE_URL`, then `VERCEL_PROJECT_PRODUCTION_URL`, then `https://perspective-nioni.vercel.app`. `metadataBase` comes from it, so canonical and social URLs are absolute.
 - The card renders with `ImageResponse` (Satori) in `src/app/api/og/card.tsx`. It uses IBM Plex Mono from `src/app/api/og/IBMPlexMono-Regular.ttf` (SHA-256 `7c6fbddca4b700be918f5f6183d9bd4464fa427fe435f0b480d77fe2bb8c5a43`) and that directory's `OFL.txt`. `next.config.ts` traces the font into the function; do not move it without updating `outputFileTracingIncludes`.
 - After changing `design/og.svg` or `public/favicon.svg`, regenerate the PNGs and verify sizes:
 
@@ -200,6 +201,7 @@ Expected `1200×630` and `180×180`. Render at an exact viewport; `qlmanage` pad
 - Deploy with `npx vercel --prod`. Unknown paths are handled by `src/app/[...slug]/page.tsx`, so no rewrite config is needed.
 - The card font is traced into the `/api/og` function; `next.config.ts` is the only place that list lives.
 - `NEXT_PUBLIC_SITE_URL` is optional. Set it in the Vercel project when the absolute metadata must name a specific origin, and redeploy.
+- A production-origin change is not env-only: it also edits the host label in `design/og.svg` and regenerates `public/og.png`. See Metadata and assets.
 - The repo has no CI configuration. Run the three checks locally before shipping.
 
 ## Verification
@@ -229,6 +231,7 @@ For a visual change, start `npm run dev` and check:
   - With a share focused, Escape clears it. With the menu open, Escape closes the menu and keeps the focus mode.
 - `curl -s 'http://localhost:3000/?chart=summers&age=6&horizon=85'` contains the share `<title>`, `og:title`, `og:description`, absolute `og:image`, `twitter:image`, and canonical. `/?chart=days` puts `d=YYYY-MM-DD` in the image URL only.
 - `curl -s -o /tmp/card.png 'http://localhost:3000/api/og?chart=summers&age=6&horizon=85'` returns a 1200×630 PNG that matches the plate; `chart=summers&age=999` returns 400.
+- After a production-origin change, the canonical host, `/`'s `og:image` URL, the `/api/og` card, and the bottom-right label of `public/og.png` all name the new origin. Open the PNG, then run `grep -rn '<old host>' . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=.next` and expect no output. The static PNG is the surface that gets skipped.
 
 Assert against the formulas in `src/time.ts`, `src/life.ts`, and the strings in `src/copy.ts`, not against a sample date.
 
