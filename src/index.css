@@ -7,8 +7,8 @@
   --line: #242424;
   --line-strong: #3a3a3a;
   --cell-spent: #2e2e2e;
-  --font-sans: "Inter Tight", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: var(--font-inter-tight), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   --max-page: 75rem;
   --max-read: 36rem;
   --gutter: clamp(1rem, 4vw, 3rem);
@@ -30,10 +30,6 @@ body {
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-#root {
-  min-height: 100dvh;
 }
 
 a {

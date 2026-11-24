@@ -1,39 +1,11 @@
+"use client";
+
 import { useLayoutEffect, useRef } from "react";
 import type { CSSProperties } from "react";
+import { MONTHS, WEEKDAYS, daysCopy } from "../copy.ts";
+import { monthColumn } from "../time.ts";
 import type { YearLayout } from "../time.ts";
 import styles from "./YearGridChart.module.css";
-
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
-const WEEKDAYS = [
-  { label: "Mon", row: 2 },
-  { label: "Wed", row: 4 },
-  { label: "Fri", row: 6 },
-];
-
-function monthColumn(
-  year: number,
-  month: number,
-  startWeekday: number,
-): number {
-  const offset = Math.round(
-    (Date.UTC(year, month, 1) - Date.UTC(year, 0, 1)) / 86_400_000,
-  );
-  return Math.floor((startWeekday + offset) / 7) + 1;
-}
 
 export function YearGridChart({
   year,
@@ -43,13 +15,7 @@ export function YearGridChart({
   layout: YearLayout;
 }) {
   const { startWeekday, columns, days } = layout;
-  const spent = days.indexOf("today");
-  const left = days.length - spent;
-  const localeDate = new Date(year, 0, spent + 1).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  const copy = daysCopy(layout);
   const trailing = columns * 7 - startWeekday - days.length;
   const style = { "--columns": columns } as CSSProperties;
 
@@ -105,7 +71,7 @@ export function YearGridChart({
             <div
               className={styles.grid}
               role="img"
-              aria-label={`${year}: ${spent} days spent, ${left} days left. Today is ${localeDate}.`}
+              aria-label={copy.label}
             >
               {Array.from({ length: startWeekday }, (_, index) => (
                 <span key={`lead-${index}`} className={styles.blank} aria-hidden="true" />

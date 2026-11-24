@@ -36,3 +36,18 @@ export function summersSpan(
     left: Math.max(0, horizon - age),
   };
 }
+
+/** Highest accepted age, in years. */
+export const AGE_MAX = 120;
+
+/** Highest accepted monthly visit rate. */
+export const VISITS_PER_MONTH_MAX = 31;
+
+/** Age the summers plate opens on. */
+export const DEFAULT_SUMMERS_AGE = 0;
+
+/** Age the visits plate opens on. */
+export const DEFAULT_VISITS_AGE = 75;
+
+/** Visits a month the visits plate opens on. */
+export const DEFAULT_VISITS_RATE = 2;

@@ -1,43 +1,80 @@
-import { DEFAULT_HORIZON, summersSpan } from "../life.ts";
+"use client";
+
+import {
+  AGE_MAX,
+  DEFAULT_HORIZON,
+  DEFAULT_SUMMERS_AGE,
+} from "../life.ts";
+import {
+  SUMMERS_CAPTION_PREFIX,
+  SUMMERS_TITLE,
+  summersCopy,
+} from "../copy.ts";
 import { InlineNumber } from "./InlineNumber.tsx";
 import { NumberField } from "./NumberField.tsx";
 import { Plate } from "./Plate.tsx";
 import { UnitGrid } from "./UnitGrid.tsx";
 import { parseCount } from "./parseCount.ts";
+import { ShareButton } from "./ShareButton.tsx";
+import { useShareFocus } from "./ShareFocus.ts";
 import { useStoredState } from "./useStoredState.ts";
 import styles from "./SummersChart.module.css";
 
-const AGE_MAX = 120;
-
-function plural(count: number, noun: string): string {
-  return `${count} ${noun}${count === 1 ? "" : "s"}`;
-}
-
 export function SummersChart() {
-  const [age, setAge] = useStoredState("summers.age", "0");
+  const { params, dismiss } = useShareFocus();
+  const shared = params?.chart === "summers" ? params : null;
+  const [age, setAge] = useStoredState(
+    "summers.age",
+    String(DEFAULT_SUMMERS_AGE),
+    shared ? String(shared.age) : undefined,
+  );
   const [horizon, setHorizon] = useStoredState(
     "summers.horizon",
     String(DEFAULT_HORIZON),
+    shared ? String(shared.horizon) : undefined,
   );
 
   const ageValue = parseCount(age, 0, AGE_MAX);
-  const horizonValue = parseCount(horizon, 0, AGE_MAX) ?? DEFAULT_HORIZON;
-  const span = ageValue === null ? null : summersSpan(ageValue, horizonValue);
-  const meta = span ? plural(span.left, "summer") : "—";
+  const horizonInput = parseCount(horizon, 0, AGE_MAX);
+  const horizonValue = horizonInput ?? DEFAULT_HORIZON;
+  const copy = ageValue === null ? null : summersCopy(ageValue, horizonValue);
+
+  const changeAge = (next: string) => {
+    if (shared) dismiss({ keepScroll: true });
+    setAge(next);
+  };
+  const changeHorizon = (next: string) => {
+    if (shared) dismiss({ keepScroll: true });
+    setHorizon(next);
+  };
 
   return (
-    <Plate title="Your summers left" meta={meta} live>
+    <Plate
+      chart="summers"
+      title={SUMMERS_TITLE}
+      meta={copy?.meta ?? "—"}
+      live
+      actions={
+        ageValue === null || horizonInput === null ? null : (
+          <ShareButton
+            chart="summers"
+            age={ageValue}
+            horizon={horizonInput}
+          />
+        )
+      }
+    >
       <div className={styles.controls}>
         <NumberField
           label="Your age"
           value={age}
-          onChange={setAge}
+          onChange={changeAge}
           min={0}
           max={AGE_MAX}
         />
       </div>
 
-      {span === null ? (
+      {copy === null ? (
         age.trim() === "" ? null : (
           <p className={styles.empty}>
             {`Enter a whole age from 0 to ${AGE_MAX}.`}
@@ -45,23 +82,21 @@ export function SummersChart() {
         )
       ) : (
         <>
-          {span.left === 0 ? (
-            <p className={styles.empty}>
-              {`No summers left by age ${horizonValue}.`}
-            </p>
+          {copy.left === 0 ? (
+            <p className={styles.empty}>{copy.empty}</p>
           ) : (
             <UnitGrid
-              count={span.spent + span.left}
-              spent={span.spent}
-              label={`${span.spent + span.left} summers from age 0 to ${horizonValue}: ${span.spent} spent, ${span.left} left.`}
+              count={copy.total}
+              spent={copy.spent}
+              label={copy.label}
             />
           )}
           <p className={styles.caption}>
-            One block a summer · until age{" "}
+            {SUMMERS_CAPTION_PREFIX}
             <InlineNumber
               label="Horizon age"
               value={horizon}
-              onChange={setHorizon}
+              onChange={changeHorizon}
               max={AGE_MAX}
             />
           </p>

@@ -30,7 +30,7 @@ Rules:
 
 ## Type
 
-Two families, loaded in `index.html`.
+Two families, self-hosted through `next/font` in `src/app/layout.tsx`.
 
 | Role | Face | Size and weight |
 | --- | --- | --- |
@@ -47,7 +47,7 @@ Rules:
 - Write copy in sentence case. Uppercase is a CSS treatment, not text.
 - Put `font-variant-numeric: tabular-nums` on every number that can change.
 - Cap prose with `--max-read` and a character measure. Use `text-wrap: balance` on headings and `text-wrap: pretty` on paragraphs.
-- The home page stacks four plates: the year grid, weekends, visits, and summers. The year grid comes first and stays the primary content.
+- The home page stacks four plates: the year grid, weekends, your summers, then visits. The year grid comes first and stays the primary content.
 - Plate meta counts are 11px mono statistics, not hero numbers. Never promote a count into display type.
 
 ## Layout
@@ -80,7 +80,7 @@ footer  Saved in this browser only.      Stavros   Support
 ```
 
 - The plate has a 1px `--line` top rule and `padding-block: clamp(3rem, 8vh, 6.5rem)`. Every plate on the home page uses it; there is no compact variant.
-- A plate head is a label on the left and one mono statistic on the right, 1.5rem above the chart or fields. That gap lives in the plate, not in each chart, so all four plates match.
+- A plate head is a label on the left and, on the right, one mono statistic plus the share trigger, 1.5rem above the chart or fields. That gap lives in the plate, not in each chart, so all four plates match.
 - Every chart spans the plate width: the year grid, the weekend grid, and both unit grids. Nothing is capped at a pixel width; a chart pinned to its natural size inside a wide plate reads as zoomed out.
 - Fields and captions sit in that same column. Their values are short, so the plate width does not stretch them.
 - `/support` is a single centered `--max-read` column. Body, headings, track fill, and supporter meta use `--ink-dim`; only the `Support us ↗` action uses `--ink`.
@@ -128,11 +128,12 @@ footer  Saved in this browser only.      Stavros   Support
 - The underline is 1px `--line-strong`, with no box, radius, or fill. Spinners are removed; the value is typed.
 - Focus is the global 2px `--ink` `:focus-visible` ring. Do not add a local outline.
 - The horizon is an `InlineNumber` inside the caption, where the age is printed: 3ch, mono, `--ink`, the same 1px `--line-strong` underline, `0–120`. It is the only inline control, it exists once per plate, and it is never moved into the field row. On coarse pointers the inline horizon is 16px in a 44px hairline box so iOS does not zoom; desktop keeps 11px / 3ch.
-- Every value is saved: `useStoredState` writes each field and horizon to localStorage under `perspective:` on change and reads it back on mount. Nothing goes to the URL, a log, or the network.
+- Every value is saved: `useStoredState` writes each field and horizon to localStorage under `perspective:` on change and reads it back on first render. Nothing is written on mount, and nothing goes to a log or the network.
+- A share link carries values in the URL, but only as a read-only view: never written to storage, never restored after dismissal.
 
 ## Motion
 
-One mount animation: `.plate` rises 10px and fades over 550ms, only inside `@media (prefers-reduced-motion: no-preference)`. Every plate on the home page runs it on mount. Input changes do not animate: the unit grid appears and the counts change without transition. No count-up, no hover movement, no progress animation, no parallax.
+One mount animation: `.plate` rises 10px and fades over 550ms, only inside `@media (prefers-reduced-motion: no-preference)`. Every plate on the home page runs it on mount. Input changes do not animate: the unit grid appears and the counts change without transition. Share focus, dismissal, and the menu do not animate either — dimming is an instant opacity change and the menu appears without a transition. No count-up, no hover movement, no progress animation, no parallax.
 
 ## Copy
 
@@ -165,9 +166,39 @@ To automate the capture, set the viewport to 1200×630, open the SVG, and call `
 
 Do not use `qlmanage` alone for the card. It pads the thumbnail to a square, so the 1200×630 output becomes 1200×1200. The browser screenshot at an exact viewport is the reliable path.
 
-- All page metadata lives in `index.html`: title, description, canonical, Open Graph, Twitter, theme color, fonts.
-- Use the production origin `https://perspective.nonicorp.com/` in canonical and social URLs. `og:url` matches canonical, and `og:image` is absolute.
-- There is one HTML shell for every route. Do not add per-route metadata or a second head system.
+- `src/app/layout.tsx` owns the base metadata through the Next Metadata API: title, description, canonical, Open Graph, Twitter, icons, theme color. There is no hand-written `<head>`.
+- Use the production origin `https://perspective.nonicorp.com/` (or `NEXT_PUBLIC_SITE_URL`) in canonical and social URLs through `metadataBase`. `og:url` matches canonical, and `og:image` is absolute.
+- A valid share URL gets its own server-rendered metadata: title, description, canonical, `og:url`, `og:image`, and `twitter:image`, all from `src/share/metadata.ts`. The social preview is a server response, never client JavaScript.
+- `public/og.png` is the default card. Valid shares point at `/api/og` instead, which renders the same chart the plate shows.
+
+## Share card
+
+The card is 1200×630, drawn with `ImageResponse` in `src/app/api/og/card.tsx`. It is the one place raw hex is allowed, because it renders outside CSS; the values mirror the tokens.
+
+| Constant | Value | Use |
+| --- | --- | --- |
+| `BG` | `#0A0A0A` | Field |
+| `INK` | `#F2EEE6` | Left cells, today ring |
+| `MUTED` | `#A39E95` | Every label and line of text |
+| `LINE` | `#242424` | The hairline |
+| `SPENT` | `#2E2E2E` | Spent cells |
+
+- Margins are 72px, content width 1056px. Top row: `PERSPECTIVE` left, the plate title right, 18px mono at 0.17em tracking.
+- The chart fills a 330px band, centered. The days card draws the same 7-row calendar with month labels, the weekday gutter, and the legend. The weekends card draws 13 columns of pairs with the dotted next-weekend box. The unit cards draw the same pattern-filled grid, scaled to fit.
+- A personal chart with nothing left shows its empty sentence centered, never an empty grid.
+- Under the chart: a 1px `LINE` hairline, then the plate meta left and the image caption right, then the share line left and the site host right, all mono and uppercase.
+- The card uses IBM Plex Mono regular from `src/app/api/og/IBMPlexMono-Regular.ttf`, licensed under `src/app/api/og/OFL.txt`. It must stay traced into the function in `next.config.ts`.
+- Days and weekends image URLs carry `d=YYYY-MM-DD` so the card is deterministic for that day. The share URL itself never carries `d`.
+
+## Share control
+
+- One trigger per plate head, 1.75rem square, a 16px two-rect currentColor icon, `--ink-muted`, `--ink` on hover or open. It sits after the meta, 0.75rem apart.
+- The menu is `--bg` with a 1px `--line-strong` border, no radius, no shadow, 9.5rem minimum, opening below the trigger and aligned right. Items are 11px mono `--ink-muted`, `--ink` and underlined on hover and focus.
+- The status line is 10px mono `--ink-muted` directly under the trigger, absolutely positioned so it never moves layout, cleared after 2.5s.
+- On coarse pointers the trigger is a 44px box pulled back by a negative margin, and menu items are 44px tall.
+- Focus mode: the focused plate stays at opacity 1 and every other plate drops to `0.4`, instantly. Scrolling more than 30% of the viewport height away from the plate ends focus mode and restores every plate to full opacity. The focused plate centers in the viewport when it fits and the page can scroll that far; the first plate stays near the top and the last is capped by the document end. An outside press, an outside focus, Escape, or a field edit dismisses it.
+- Dismissal returns the viewport to where it was before the share scroll, so the page reads as the normal page from the top. A field edit or a scroll dismissal keeps the viewport in place.
+- No count, no badge, no tooltip beyond `title="Share"`, no confirmation toast.
 
 ## Before you merge a visual change
 
@@ -175,7 +206,9 @@ Do not use `qlmanage` alone for the card. It pads the thumbnail to a square, so 
 - [ ] 1440×900 and 375×812 both look intentional; no page-level horizontal scroll.
 - [ ] The grid label and legend report the same spent and left numbers.
 - [ ] The weekend chart counts only complete Saturday+Sunday pairs, and 2026 reads 52 weekends with 5 left on 23 November.
-- [ ] Every field and both horizons survive a reload, read from localStorage keys prefixed `perspective:`; clearing site data restores the defaults. No cookies, sessionStorage, or network writes.
+- [ ] Every field and both horizons survive a reload, read from localStorage keys prefixed `perspective:`; clearing site data restores the defaults. No cookies, sessionStorage, or network writes, and a first visit writes nothing.
+- [ ] A share URL shows its values, dims the other plates, and writes nothing; dismissing, editing, or scrolling away clears the URL, restores the saved values, and unhides the page.
+- [ ] `/api/og` returns a 1200×630 card matching the plate, and the share page's metadata points at it.
 - [ ] 75 and 2 reads `240 visits` with 120 spent squares and 240 left; 85 reads `0 visits` with the empty state, never a negative count.
 - [ ] The largest grid (age 0, 31 visits a month) stays inside the page and never scrolls the page sideways.
 - [ ] Today is outlined in the grid.

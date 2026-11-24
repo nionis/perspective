@@ -77,3 +77,22 @@ export function yearLayout(today: Date): YearLayout {
     days,
   };
 }
+
+/** Local calendar date as `YYYY-MM-DD`. */
+export function isoDate(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+/** Column a month starts in, 1-based, for the Sunday-first year grid. */
+export function monthColumn(
+  year: number,
+  month: number,
+  startWeekday: number,
+): number {
+  const offset = Math.round(
+    (Date.UTC(year, month, 1) - Date.UTC(year, 0, 1)) / 86_400_000,
+  );
+  return Math.floor((startWeekday + offset) / 7) + 1;
+}

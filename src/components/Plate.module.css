@@ -6,10 +6,17 @@
 .head {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 0.35rem 1rem;
   margin-bottom: 1.5rem;
+}
+
+.headMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-inline-start: auto;
 }
 
 .title,
@@ -25,7 +32,7 @@
 .meta {
   letter-spacing: 0.08em;
   white-space: nowrap;
-  margin-inline-start: auto;
+  margin-inline-start: 0;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -43,4 +50,10 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Beats the held mount animation without cancelling it, so dismissing a
+   share never restarts the plate. */
+.dimmed {
+  opacity: 0.4 !important;
 }

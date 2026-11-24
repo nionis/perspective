@@ -1,87 +1,121 @@
-import { DEFAULT_HORIZON, visitsSpan, visitsStartAge } from "../life.ts";
+"use client";
+
+import {
+  AGE_MAX,
+  DEFAULT_HORIZON,
+  DEFAULT_VISITS_AGE,
+  DEFAULT_VISITS_RATE,
+  VISITS_PER_MONTH_MAX,
+} from "../life.ts";
+import { VISITS_TITLE, visitsCopy } from "../copy.ts";
 import { InlineNumber } from "./InlineNumber.tsx";
 import { NumberField } from "./NumberField.tsx";
 import { Plate } from "./Plate.tsx";
 import { UnitGrid } from "./UnitGrid.tsx";
 import { parseCount } from "./parseCount.ts";
+import { ShareButton } from "./ShareButton.tsx";
+import { useShareFocus } from "./ShareFocus.ts";
 import { useStoredState } from "./useStoredState.ts";
 import styles from "./VisitsChart.module.css";
 
-const AGE_MAX = 120;
-const VISITS_MAX = 31;
-
-function format(value: number): string {
-  return value.toLocaleString("en-US");
-}
-
-function plural(count: number, noun: string): string {
-  return `${format(count)} ${noun}${count === 1 ? "" : "s"}`;
-}
-
 export function VisitsChart() {
-  const [age, setAge] = useStoredState("visits.age", "75");
-  const [visits, setVisits] = useStoredState("visits.rate", "2");
+  const { params, dismiss } = useShareFocus();
+  const shared = params?.chart === "visits" ? params : null;
+  const [age, setAge] = useStoredState(
+    "visits.age",
+    String(DEFAULT_VISITS_AGE),
+    shared ? String(shared.age) : undefined,
+  );
+  const [visits, setVisits] = useStoredState(
+    "visits.rate",
+    String(DEFAULT_VISITS_RATE),
+    shared ? String(shared.rate) : undefined,
+  );
   const [horizon, setHorizon] = useStoredState(
     "visits.horizon",
     String(DEFAULT_HORIZON),
+    shared ? String(shared.horizon) : undefined,
   );
 
   const ageValue = parseCount(age, 0, AGE_MAX);
-  const visitsValue = parseCount(visits, 0, VISITS_MAX);
-  const horizonValue = parseCount(horizon, 0, AGE_MAX) ?? DEFAULT_HORIZON;
-  const values =
+  const visitsValue = parseCount(visits, 0, VISITS_PER_MONTH_MAX);
+  const horizonInput = parseCount(horizon, 0, AGE_MAX);
+  const horizonValue = horizonInput ?? DEFAULT_HORIZON;
+  const copy =
     ageValue === null || visitsValue === null
       ? null
-      : { age: ageValue, visits: visitsValue };
-  const span = values
-    ? visitsSpan(values.age, values.visits, horizonValue)
-    : null;
-  const start = values ? visitsStartAge(values.age) : 0;
-  const rate = plural(values?.visits ?? 0, "visit");
-  const meta = span ? plural(span.left, "visit") : "—";
+      : visitsCopy(ageValue, visitsValue, horizonValue);
+
+  const changeAge = (next: string) => {
+    if (shared) dismiss({ keepScroll: true });
+    setAge(next);
+  };
+  const changeVisits = (next: string) => {
+    if (shared) dismiss({ keepScroll: true });
+    setVisits(next);
+  };
+  const changeHorizon = (next: string) => {
+    if (shared) dismiss({ keepScroll: true });
+    setHorizon(next);
+  };
 
   return (
-    <Plate title="Grandparents visits left" meta={meta} live>
+    <Plate
+      chart="visits"
+      title={VISITS_TITLE}
+      meta={copy?.meta ?? "—"}
+      live
+      actions={
+        ageValue === null ||
+        visitsValue === null ||
+        horizonInput === null ? null : (
+          <ShareButton
+            chart="visits"
+            age={ageValue}
+            rate={visitsValue}
+            horizon={horizonInput}
+          />
+        )
+      }
+    >
       <div className={styles.controls}>
         <NumberField
           label="Their age"
           value={age}
-          onChange={setAge}
+          onChange={changeAge}
           min={0}
           max={AGE_MAX}
         />
         <NumberField
           label="Visits a month"
           value={visits}
-          onChange={setVisits}
+          onChange={changeVisits}
           min={0}
-          max={VISITS_MAX}
+          max={VISITS_PER_MONTH_MAX}
         />
       </div>
 
-      {span === null ? (
+      {copy === null ? (
         <p className={styles.empty}>
-          {`Enter whole numbers: age 0–${AGE_MAX}, visits a month 0–${VISITS_MAX}.`}
+          {`Enter whole numbers: age 0–${AGE_MAX}, visits a month 0–${VISITS_PER_MONTH_MAX}.`}
         </p>
       ) : (
         <>
-          {span.left === 0 ? (
-            <p className={styles.empty}>
-              {`No visits left by age ${horizonValue}.`}
-            </p>
+          {copy.left === 0 ? (
+            <p className={styles.empty}>{copy.empty}</p>
           ) : (
             <UnitGrid
-              count={span.spent + span.left}
-              spent={span.spent}
-              label={`${plural(span.spent + span.left, "visit")} from age ${start} to ${horizonValue}: ${plural(span.spent, "visit")} spent, ${plural(span.left, "visit")} left, at ${rate} a month.`}
+              count={copy.total}
+              spent={copy.spent}
+              label={copy.label}
             />
           )}
           <p className={styles.caption}>
-            {`${rate} a month · age ${start} to `}
+            {copy.captionPrefix}
             <InlineNumber
               label="Horizon age"
               value={horizon}
-              onChange={setHorizon}
+              onChange={changeHorizon}
               max={AGE_MAX}
             />
           </p>

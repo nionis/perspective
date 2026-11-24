@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { SUPPORT_URL } from "../content/donations.ts";
 import styles from "./Layout.module.css";
 
 export function SiteHeader({ meta }: { meta?: ReactNode }) {
   return (
     <header className={styles.header}>
-      <Link to="/" className={styles.brand}>
+      <Link href="/" className={styles.brand}>
         Perspective
       </Link>
       {meta ? <div className={styles.meta}>{meta}</div> : null}

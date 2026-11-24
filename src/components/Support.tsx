@@ -1,4 +1,4 @@
-import { SiteFooter, SiteHeader } from "../components/Layout.tsx";
+import { SiteFooter, SiteHeader } from "./Layout.tsx";
 import {
   DONATION_YEAR,
   NAMED_SUPPORTERS,
