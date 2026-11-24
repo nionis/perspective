@@ -6,7 +6,9 @@
   width: 100%;
   max-width: var(--max-page);
   margin: 0 auto;
-  padding: 1.75rem var(--gutter);
+  padding-block: 1.75rem;
+  padding-inline: max(var(--gutter), env(safe-area-inset-left))
+    max(var(--gutter), env(safe-area-inset-right));
 }
 
 .brand {
@@ -35,7 +37,9 @@
   width: 100%;
   max-width: var(--max-page);
   margin: 0 auto;
-  padding: 2rem var(--gutter) 2.5rem;
+  padding-block: 2rem 2.5rem;
+  padding-inline: max(var(--gutter), env(safe-area-inset-left))
+    max(var(--gutter), env(safe-area-inset-right));
   border-top: 1px solid var(--line);
   font-family: var(--font-mono);
   font-size: 11px;
@@ -57,4 +61,12 @@
   color: var(--ink);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+@media (pointer: coarse) {
+  .brand,
+  .footer a {
+    min-height: 44px;
+    margin-block: -0.625rem;
+  }
 }

@@ -85,6 +85,7 @@ footer  Saved in this browser only.      Stavros   Support
 - Fields and captions sit in that same column. Their values are short, so the plate width does not stretch them.
 - `/support` is a single centered `--max-read` column. Body, headings, track fill, and supporter meta use `--ink-dim`; only the `Support us ↗` action uses `--ink`.
 - The grid scroller owns horizontal overflow. The page never scrolls sideways.
+- Pages fill `100dvh`; header, footer, and mains pad inline with `max(var(--gutter), env(safe-area-inset-*))`, and the viewport meta is `viewport-fit=cover`.
 
 ## Chart language
 
@@ -96,6 +97,7 @@ footer  Saved in this browser only.      Stavros   Support
 - Mon, Wed, and Fri labels sit on rows 2, 4, and 6 of the Sunday-first grid.
 - The grid is `role="img"` with a single label that states the counts and today's date. Cells, month labels, and weekday labels are `aria-hidden`.
 - The scroller is focusable (`tabIndex=0`, `role="group"`, label "Year grid") and shows a 2px `--ink` focus ring at 4px offset.
+- On mount the scroller opens with today in view: it centers today's column only when that cell would otherwise be clipped; with the full year visible it stays at January. The scroll is instant.
 - The legend below the scroller is text, not color swatches alone.
 
 ### Weekends
@@ -125,7 +127,7 @@ footer  Saved in this browser only.      Stavros   Support
 - Field labels are 10px mono uppercase at 0.08em tracking. Values are 18px Inter Tight with tabular numerals.
 - The underline is 1px `--line-strong`, with no box, radius, or fill. Spinners are removed; the value is typed.
 - Focus is the global 2px `--ink` `:focus-visible` ring. Do not add a local outline.
-- The horizon is an `InlineNumber` inside the caption, where the age is printed: 3ch, mono, `--ink`, the same 1px `--line-strong` underline, `0–120`. It is the only inline control, it exists once per plate, and it is never moved into the field row.
+- The horizon is an `InlineNumber` inside the caption, where the age is printed: 3ch, mono, `--ink`, the same 1px `--line-strong` underline, `0–120`. It is the only inline control, it exists once per plate, and it is never moved into the field row. On coarse pointers the inline horizon is 16px in a 44px hairline box so iOS does not zoom; desktop keeps 11px / 3ch.
 - Every value is saved: `useStoredState` writes each field and horizon to localStorage under `perspective:` on change and reads it back on mount. Nothing goes to the URL, a log, or the network.
 
 ## Motion

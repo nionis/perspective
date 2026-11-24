@@ -5,9 +5,10 @@
 
 .head {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.35rem 1rem;
   margin-bottom: 1.5rem;
 }
 
@@ -24,6 +25,7 @@
 .meta {
   letter-spacing: 0.08em;
   white-space: nowrap;
+  margin-inline-start: auto;
 }
 
 @media (prefers-reduced-motion: no-preference) {

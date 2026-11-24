@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from "react";
 import type { CSSProperties } from "react";
 import type { YearLayout } from "../time.ts";
 import styles from "./YearGridChart.module.css";
@@ -52,10 +53,30 @@ export function YearGridChart({
   const trailing = columns * 7 - startWeekday - days.length;
   const style = { "--columns": columns } as CSSProperties;
 
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    const today = scroller.querySelector<HTMLElement>("[data-today]");
+    if (!today) return;
+    const viewport = scroller.getBoundingClientRect();
+    const cell = today.getBoundingClientRect();
+    if (cell.left >= viewport.left && cell.right <= viewport.right) return;
+    const max = scroller.scrollWidth - scroller.clientWidth;
+    const centered =
+      scroller.scrollLeft +
+      cell.left -
+      viewport.left -
+      (scroller.clientWidth - cell.width) / 2;
+    scroller.scrollLeft = Math.min(max, Math.max(0, centered));
+  }, []);
+
   return (
     <div className={styles.wrapper} style={style}>
       <div
         className={styles.scroller}
+        ref={scrollerRef}
         tabIndex={0}
         role="group"
         aria-label="Year grid"
@@ -93,6 +114,7 @@ export function YearGridChart({
                 <span
                   key={index}
                   className={`${styles.cell} ${styles[status]}`}
+                  data-today={status === "today" ? "" : undefined}
                   aria-hidden="true"
                 />
               ))}

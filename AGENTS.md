@@ -80,6 +80,7 @@ Four plates stack on `/`, in this order. Every one is a `<Plate>`: mono title le
 - One cell per day of the year, Sunday-first, with leading and trailing blanks so months stay aligned.
 - 53 columns in 2026, 54 in 2028. Fills its container; cells clamp 10–22px with 3px gaps, a 2rem weekday gutter, and a 2.5rem month offset.
 - Spent is `--cell-spent`, left is `--ink`, today is an inset `--ink` ring. The text legend below the grid is the key for the whole page.
+- On mount it scrolls today's cell into view only when that cell is outside the scroller; the whole year visible means no scroll.
 - The grid owns a focusable horizontal scroller (`role="group"`, label "Year grid"); page-level horizontal scroll is a bug.
 - Meta is `${days} days`. The `role="img"` label states spent, today, and left; cells and labels are `aria-hidden`.
 
@@ -130,6 +131,7 @@ Shared: `UnitGrid` is the only place a count becomes squares; both personal plat
 - The inset today ring appears on the year grid and on the weekend chart. No other `box-shadow`.
 - The grid keeps its focusable horizontal scroller. Page-level horizontal scrolling is a bug. The weekend grid and the unit grids must fit the content width instead.
 - The only motion is the `.plate` mount animation, guarded by `prefers-reduced-motion: no-preference`. Input changes do not animate.
+- Touch pointers: the inline horizon is 16px with a 44px hit box; header, footer, and Support links are 44px targets without growing the layout (a 44px box pulled back by a negative margin).
 - Do not add navigation, a marketing hero, or a hero number.
 
 ## Content and support
